@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Agriculture | Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: #1a5120;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #444;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #2e7d32;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        }
+
+        .cta-button:hover {
+            background: #1b5e20;
+            transform: translateY(-3px);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.65);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card i {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="bg-slider">
+        <div class="bg-slide"></div>
+        <div class="bg-slide"></div>
+        <div class="bg-slide"></div>
+    </div>
+    <div class="bg-overlay"></div>
+
+    <div class="container" style="max-width: 1000px;">
+
+        <div class="box hero">
+            <h1><i class="fas fa-seedling"></i> Smart Agriculture</h1>
+            <p>Empowering farmers with AI-driven insights for a sustainable future.</p>
+
+            <a href="/predict" class="cta-button">
+                <i class="fas fa-magic"></i> Get Crop Recommendation
+            </a>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <i class="fas fa-chart-line"></i>
+                <h3>Data Driven</h3>
+                <p>Utilizing advanced machine learning algorithms to analyze soil and climate data for precise
+                    recommendations.</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-leaf"></i>
+                <h3>Sustainable</h3>
+                <p>Promoting eco-friendly farming practices by suggesting crops that naturally thrive in your local
+                    environment.</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Risk Aware</h3>
+                <p>Evaluating environmental risks to warn you about potential challenges before you plant.</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

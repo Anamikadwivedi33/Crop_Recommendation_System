@@ -1,0 +1,16 @@
+<nav class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-tractor"></i> SmartKisan
+    </div>
+    <div class="nav-links">
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+            <i class="fas fa-home"></i> Home
+        </a>
+        <a href="/predict" class="{% if request.path == '/predict' %}active{% endif %}">
+            <i class="fas fa-magic"></i> Predict
+        </a>
+        <a href="/market" class="{% if request.path == '/market' %}active{% endif %}">
+            <i class="fas fa-chart-bar"></i> Mandi Rates
+        </a>
+    </div>
+</nav>

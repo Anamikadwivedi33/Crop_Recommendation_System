@@ -1,0 +1,14 @@
+[
+  { "state": "Punjab", "district": "Ludhiana", "market": "Ludhiana Mandi", "commodity": "Wheat", "min_price": 2100, "max_price": 2350, "modal_price": 2250, "date": "2024-12-25" },
+  { "state": "Punjab", "district": "Amritsar", "market": "Amritsar Mandi", "commodity": "Rice", "min_price": 3100, "max_price": 3500, "modal_price": 3300, "date": "2024-12-25" },
+  { "state": "Haryana", "district": "Karnal", "market": "Karnal Mandi", "commodity": "Wheat", "min_price": 2150, "max_price": 2300, "modal_price": 2220, "date": "2024-12-25" },
+  { "state": "Haryana", "district": "Hisar", "market": "Hisar Mandi", "commodity": "Cotton", "min_price": 6500, "max_price": 7200, "modal_price": 6900, "date": "2024-12-25" },
+  { "state": "Madhya Pradesh", "district": "Indore", "market": "Indore Mandi", "commodity": "Soyabean", "min_price": 4200, "max_price": 4800, "modal_price": 4500, "date": "2024-12-25" },
+  { "state": "Madhya Pradesh", "district": "Bhopal", "market": "Bhopal Mandi", "commodity": "Wheat", "min_price": 2000, "max_price": 2250, "modal_price": 2100, "date": "2024-12-25" },
+  { "state": "Maharashtra", "district": "Nashik", "market": "Lasalgaon", "commodity": "Onion", "min_price": 1200, "max_price": 1800, "modal_price": 1500, "date": "2024-12-25" },
+  { "state": "Maharashtra", "district": "Pune", "market": "Pune Mandi", "commodity": "Tomato", "min_price": 800, "max_price": 1200, "modal_price": 1000, "date": "2024-12-25" },
+  { "state": "Uttar Pradesh", "district": "Kanpur", "market": "Kanpur Mandi", "commodity": "Potato", "min_price": 600, "max_price": 900, "modal_price": 750, "date": "2024-12-25" },
+  { "state": "Uttar Pradesh", "district": "Lucknow", "market": "Lucknow Mandi", "commodity": "Rice", "min_price": 2800, "max_price": 3200, "modal_price": 3000, "date": "2024-12-25" },
+  { "state": "Rajasthan", "district": "Jaipur", "market": "Jaipur Mandi", "commodity": "Mustard", "min_price": 5000, "max_price": 5600, "modal_price": 5300, "date": "2024-12-25" },
+  { "state": "Gujarat", "district": "Surat", "market": "Surat APMC", "commodity": "Banana", "min_price": 1500, "max_price": 2200, "modal_price": 1900, "date": "2024-12-25" }
+]
