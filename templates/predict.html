@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -67,7 +67,9 @@
         </div>
 
         {% if results %}
-        <h2 id="results" class="results-header"><i class="fas fa-list-ol"></i> Top Recommendations</h2>
+        <h2 id="results" class="results-header">
+            <i class="fas fa-list-ol"></i> Top Recommendations
+        </h2>
 
         {% for r in results %}
         <div class="crop-card 
@@ -89,8 +91,6 @@
                 <li>{{ w }}</li>
                 {% endfor %}
             </ul>
-            {% else %}
-            <p><i>No specific ideal conditions matched.</i></p>
             {% endif %}
 
             {% if r.why_not %}
@@ -101,16 +101,22 @@
                 {% endfor %}
             </ul>
             {% endif %}
-
-            {% if 'High' in r.risk %}
-            <div class="warning">
-                <i class="fas fa-exclamation-circle"></i>
-                Warning: Environmental conditions deviate significantly from optimal requirements. Additional care
-                required.
-            </div>
-            {% endif %}
         </div>
         {% endfor %}
+
+        <!-- ========================= -->
+        <!-- XAI EXPLANATIONS (NEW) -->
+        <!-- ========================= -->
+        <div class="box">
+            <h2><i class="fas fa-brain"></i> Explainable AI Insights</h2>
+
+            <h3>SHAP Explanation</h3>
+            <img src="/static/explain/shap.png?ts={{ ts }}" width="100%">
+
+            <h3 style="margin-top:30px;">LIME Explanation</h3>
+            <img src="/static/explain/lime.png?ts={{ ts }}" width="100%">
+        </div>
+
         {% endif %}
 
         {% if error %}
@@ -123,5 +129,4 @@
     </div>
 
 </body>
-
 </html>

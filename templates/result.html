@@ -1,0 +1,7 @@
+<h2>Prediction: {{ crop }}</h2>
+
+<h3>SHAP Explanation</h3>
+<img src="{{ url_for('static', filename='explain/shap.png') }}" width="600">
+
+<h3>LIME Explanation</h3>
+<img src="{{ url_for('static', filename='explain/lime.png') }}" width="600">

@@ -1,21 +1,40 @@
+import matplotlib
+matplotlib.use("Agg")   #  FINAL FIX
+
 import pickle
 import numpy as np
-from flask import Flask, render_template, request
+import pandas as pd
+import shap
+import matplotlib.pyplot as plt
+import time
 
-# import json  <-- Removed as we use market_utils no
+
+from flask import Flask, render_template, request
+from lime.lime_tabular import LimeTabularExplainer
+
 from explain_utils import build_ideal_ranges, explain_crop, calculate_risk
 from market_utils import get_mandi_data
 
 app = Flask(__name__)
 
+# -----------------------------
 # Load trained model
+# -----------------------------
 with open("model.pkl", "rb") as f:
     model = pickle.load(f)
 
-# Mandi Data is now fetched dynamically inside the route
+# -----------------------------
+# Load dataset (for SHAP & LIME background)
+# -----------------------------
+df = pd.read_csv("Crop_recommendation.csv")
+FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+X_df = df[FEATURES]
+y = df["label"]
+class_names = sorted(y.unique())
 
-# Build ideal ranges once (dataset-derived)
-# Build ideal ranges once (dataset-derived)
+# -----------------------------
+# Build ideal ranges once
+# -----------------------------
 ideal_ranges = build_ideal_ranges("Crop_recommendation.csv")
 
 @app.route("/")
@@ -24,9 +43,8 @@ def home():
 
 @app.route("/market")
 def market():
-    data = get_mandi_data()  # Fetches real or fallback data dynamically
+    data = get_mandi_data()
     return render_template("market.html", market_data=data)
-
 @app.route("/predict", methods=["GET", "POST"])
 def predict():
     results = None
@@ -34,7 +52,9 @@ def predict():
 
     if request.method == "POST":
         try:
+            # -----------------------------
             # Read user inputs
+            # -----------------------------
             user_input = {
                 "N": float(request.form["N"]),
                 "P": float(request.form["P"]),
@@ -45,7 +65,8 @@ def predict():
                 "rainfall": float(request.form["rainfall"])
             }
 
-            # Prepare model input (order must match training)
+            input_df = pd.DataFrame([user_input])
+
             X = [[
                 user_input["N"],
                 user_input["P"],
@@ -56,11 +77,11 @@ def predict():
                 user_input["rainfall"]
             ]]
 
-            # Predict probabilities
+            # -----------------------------
+            # Model prediction
+            # -----------------------------
             probs = model.predict_proba(X)[0]
             classes = model.classes_
-
-            # Pick TOP-3
             top3_idx = np.argsort(probs)[-3:][::-1]
 
             results = []
@@ -79,10 +100,77 @@ def predict():
                     "risk": risk
                 })
 
+            # -----------------------------
+            # ✅ FIX 1: Risk-based sorting
+            # -----------------------------
+            risk_priority = {
+                "Low Risk": 0,
+                "Medium Risk": 1,
+                "High Risk": 2
+            }
+
+            results = sorted(
+                results,
+                key=lambda r: (
+                    risk_priority.get(r["risk"], 3),
+                    -float(r["suitability"].replace("%", ""))
+                )
+            )
+
+            # ======================================================
+            # SHAP EXPLANATION
+            # ======================================================
+            background = X_df.sample(50, random_state=42)
+            shap_explainer = shap.KernelExplainer(
+                model.predict_proba,
+                background
+            )
+
+            shap_values = shap_explainer.shap_values(input_df)
+
+            plt.figure()
+            shap.summary_plot(
+                shap_values,
+                input_df,
+                plot_type="bar",
+                show=False
+            )
+            plt.tight_layout()
+            plt.savefig("static/explain/shap.png", bbox_inches="tight")
+            plt.close()
+
+            # ======================================================
+            # LIME EXPLANATION
+            # ======================================================
+            lime_explainer = LimeTabularExplainer(
+                training_data=X_df.values,
+                feature_names=FEATURES,
+                class_names=class_names,
+                mode="classification"
+            )
+
+            exp = lime_explainer.explain_instance(
+                input_df.values[0],
+                model.predict_proba,
+                num_features=7
+            )
+
+            fig = exp.as_pyplot_figure()
+            plt.tight_layout()
+            fig.savefig("static/explain/lime.png", bbox_inches="tight")
+            plt.close(fig)
+
         except Exception as e:
             error = str(e)
 
-    return render_template("predict.html", results=results, error=error)
+    return render_template(
+        "predict.html",
+        results=results,
+        error=error,
+        ts=int(time.time())
+    )
+print("Starting Flask Server...")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
+
