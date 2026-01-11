@@ -1,16 +1,12 @@
 import matplotlib
-matplotlib.use("Agg")   #  FINAL FIX
+matplotlib.use("Agg")   # SAFE FOR SERVER
 
 import pickle
 import numpy as np
 import pandas as pd
-import shap
-import matplotlib.pyplot as plt
 import time
 
-
 from flask import Flask, render_template, request
-from lime.lime_tabular import LimeTabularExplainer
 
 from explain_utils import build_ideal_ranges, explain_crop, calculate_risk
 from market_utils import get_mandi_data
@@ -24,19 +20,19 @@ with open("model.pkl", "rb") as f:
     model = pickle.load(f)
 
 # -----------------------------
-# Load dataset (for SHAP & LIME background)
+# Load dataset (ONLY for labels / logic)
 # -----------------------------
 df = pd.read_csv("Crop_recommendation.csv")
 FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
-X_df = df[FEATURES]
-y = df["label"]
-class_names = sorted(y.unique())
 
 # -----------------------------
 # Build ideal ranges once
 # -----------------------------
 ideal_ranges = build_ideal_ranges("Crop_recommendation.csv")
 
+# -----------------------------
+# Routes
+# -----------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -45,6 +41,7 @@ def home():
 def market():
     data = get_mandi_data()
     return render_template("market.html", market_data=data)
+
 @app.route("/predict", methods=["GET", "POST"])
 def predict():
     results = None
@@ -64,8 +61,6 @@ def predict():
                 "ph": float(request.form["ph"]),
                 "rainfall": float(request.form["rainfall"])
             }
-
-            input_df = pd.DataFrame([user_input])
 
             X = [[
                 user_input["N"],
@@ -89,7 +84,9 @@ def predict():
                 crop = classes[i].title()
                 score = round(probs[i] * 100, 2)
 
-                why, why_not, deviation = explain_crop(crop, user_input, ideal_ranges)
+                why, why_not, deviation = explain_crop(
+                    crop, user_input, ideal_ranges
+                )
                 risk = calculate_risk(deviation)
 
                 results.append({
@@ -101,7 +98,7 @@ def predict():
                 })
 
             # -----------------------------
-            # ✅ FIX 1: Risk-based sorting
+            # Risk-based sorting
             # -----------------------------
             risk_priority = {
                 "Low Risk": 0,
@@ -117,60 +114,23 @@ def predict():
                 )
             )
 
-            # ======================================================
-            # SHAP EXPLANATION
-            # ======================================================
-            background = X_df.sample(50, random_state=42)
-            shap_explainer = shap.KernelExplainer(
-                model.predict_proba,
-                background
-            )
-
-            shap_values = shap_explainer.shap_values(input_df)
-
-            plt.figure()
-            shap.summary_plot(
-                shap_values,
-                input_df,
-                plot_type="bar",
-                show=False
-            )
-            plt.tight_layout()
-            plt.savefig("static/explain/shap.png", bbox_inches="tight")
-            plt.close()
-
-            # ======================================================
-            # LIME EXPLANATION
-            # ======================================================
-            lime_explainer = LimeTabularExplainer(
-                training_data=X_df.values,
-                feature_names=FEATURES,
-                class_names=class_names,
-                mode="classification"
-            )
-
-            exp = lime_explainer.explain_instance(
-                input_df.values[0],
-                model.predict_proba,
-                num_features=7
-            )
-
-            fig = exp.as_pyplot_figure()
-            plt.tight_layout()
-            fig.savefig("static/explain/lime.png", bbox_inches="tight")
-            plt.close(fig)
-
         except Exception as e:
             error = str(e)
 
+    # -----------------------------
+    # IMPORTANT:
+    # SHAP / LIME images are PRE-GENERATED
+    # No runtime XAI computation here
+    # -----------------------------
     return render_template(
         "predict.html",
         results=results,
         error=error,
+        show_xai=True,
         ts=int(time.time())
     )
+
 print("Starting Flask Server...")
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
-

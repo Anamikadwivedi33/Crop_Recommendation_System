@@ -1,10 +1,9 @@
- # lime_explain.py  (FINAL - FLASK SAFE)
+ # lime_explain.py  (FINAL – RESEARCH SAFE)
 
 import joblib
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-
 from lime.lime_tabular import LimeTabularExplainer
 
 # -----------------------------
@@ -13,44 +12,47 @@ from lime.lime_tabular import LimeTabularExplainer
 model = joblib.load("model.pkl")
 df = pd.read_csv("Crop_recommendation.csv")
 
-features = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
-X = df[features]
+FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+X = df[FEATURES]
 y = df["label"]
 
 # -----------------------------
-# Sample input
+# Reproducible single sample
 # -----------------------------
-sample = X.iloc[0].values
+sample = X.sample(1, random_state=42).values[0]
 
 pred = model.predict([sample])[0]
 print("Predicted Crop:", pred)
 
 # -----------------------------
-# LIME Explainer
+# LIME Explainer (CONTROLLED)
 # -----------------------------
 explainer = LimeTabularExplainer(
     training_data=X.values,
-    feature_names=features,
+    feature_names=FEATURES,
     class_names=sorted(y.unique()),
-    mode="classification"
+    mode="classification",
+    random_state=42
 )
 
+# -----------------------------
+# LIME Explanation (SPARSE)
+# -----------------------------
 exp = explainer.explain_instance(
     sample,
     model.predict_proba,
-    num_features=7
+    num_features=3   # 🔥 sparsity for research
 )
 
 # -----------------------------
-# Create folder if not exists
+# Save explanation
 # -----------------------------
 os.makedirs("static/explain", exist_ok=True)
 
-# -----------------------------
-# SAVE LIME FIGURE
-# -----------------------------
 fig = exp.as_pyplot_figure()
-fig.savefig("static/explain/lime.png", bbox_inches="tight")
+plt.title("Local LIME Explanation")
+plt.tight_layout()
+fig.savefig("static/explain/lime_local.png", bbox_inches="tight")
 plt.close(fig)
 
-print("LIME image saved successfully")
+print("Local LIME image saved successfully")

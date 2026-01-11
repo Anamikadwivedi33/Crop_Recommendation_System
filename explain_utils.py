@@ -1,12 +1,22 @@
 import pandas as pd
 
 # =====================================================
+# Feature importance weights (domain-informed)
+# =====================================================
+FEATURE_WEIGHTS = {
+    "rainfall": 2.0,
+    "temperature": 2.0,
+    "ph": 1.5,
+    "humidity": 1.5
+}
+
+# =====================================================
 # 1. Build ideal ranges from dataset
 # =====================================================
 def build_ideal_ranges(csv_path):
     df = pd.read_csv(csv_path)
 
-    # Clean crop labels
+    # clean labels
     df["label"] = df["label"].str.strip().str.title()
 
     features = ["temperature", "rainfall", "humidity", "ph"]
@@ -26,45 +36,57 @@ def build_ideal_ranges(csv_path):
 
 
 # =====================================================
-# 2. Explain crop suitability (LOW / HIGH direction)
+# 2. Explain crop suitability (numerical + interpretable)
 # =====================================================
 def explain_crop(crop, user_input, ideal_ranges):
     why = []
     why_not = []
-    deviation = 0
+    deviation = {}   # feature-wise deviation magnitude
 
     if crop not in ideal_ranges:
-        return ["Crop data not available"], ["No explanation found"], 3
+        return ["Crop data not available"], ["Explanation not available"], {}
 
     for feature, (low, high) in ideal_ranges[crop].items():
         value = user_input[feature]
 
         if low <= value <= high:
-            why.append(f"{feature} is within ideal range")
+            why.append(
+                f"{feature} ({value}) lies within ideal range "
+                f"({round(low,2)}–{round(high,2)})"
+            )
+            deviation[feature] = 0.0
         else:
-            deviation += 1
-
             if value < low:
+                diff = round(low - value, 2)
                 why_not.append(
-                    f"{feature} is lower than ideal range "
+                    f"{feature} is {diff} units lower than ideal "
                     f"(ideal: {round(low,2)}–{round(high,2)})"
                 )
             else:
+                diff = round(value - high, 2)
                 why_not.append(
-                    f"{feature} is higher than ideal range "
+                    f"{feature} is {diff} units higher than ideal "
                     f"(ideal: {round(low,2)}–{round(high,2)})"
                 )
+
+            deviation[feature] = diff
 
     return why, why_not, deviation
 
 
 # =====================================================
-# 3. Risk calculation
+# 3. Weighted risk calculation (robust & research-grade)
 # =====================================================
 def calculate_risk(deviation):
-    if deviation == 0:
+    total_risk = 0.0
+
+    for feature, dev in deviation.items():
+        weight = FEATURE_WEIGHTS.get(feature, 1.0)
+        total_risk += float(dev) * weight
+
+    if total_risk <= 3:
         return "Low Risk"
-    elif deviation == 1:
+    elif total_risk <= 8:
         return "Medium Risk"
     else:
         return "High Risk"
